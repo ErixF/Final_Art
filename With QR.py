@@ -3,8 +3,9 @@ import random
 import time
 import os
 import sys
-import qrcode  # Make sure to install this library: pip install qrcode[pil]
+import qrcode  # Make sure to install this library: pip install "qrcode[pil]"
 from io import BytesIO  # For converting PIL image to a pygame image
+import string
 
 # ================= CONFIGURABLE PART =================
 
@@ -38,19 +39,39 @@ QUESTION_MODE_TIMEOUT = 2  # seconds with no input in Question Mode before recor
 THANK_YOU_DURATION = 15  # seconds to display thank you screen
 
 # ---------------- Custom Keyboard Remap ----------------
+def random_custom_layout():
+    keyboardLayout = {
+        'q': '', 'w': '', 'e': '', 'r': '', 't': '', 'y': '', 'u': '', 'i': '', 'o': '', 'p': '',
+        'a': '', 's': '', 'd': '', 'f': '', 'g': '', 'h': '', 'j': '', 'k': '', 'l': '',
+        'z': '', 'x': '', 'c': '', 'v': '', 'b': '', 'n': '', 'm': ''
+    }
+
+    usedLetters = []
+    for key in keyboardLayout.keys():
+        # Choose a random letter from a-z that hasn't been used
+        letter = random.choice(string.ascii_lowercase)
+        while letter in usedLetters:
+            letter = random.choice(string.ascii_lowercase)
+        keyboardLayout[key] = letter
+        usedLetters.append(letter)
+
+    return keyboardLayout
+
+
 # Remap only the alphabet keys as specified:
 # Top row: QWERTYUIOP -> A B C D E F G H I J
 # Home row: ASDFGHJKL -> K L M N O P Q R S
 # Bottom row: ZXCVBNM -> T U V W X Y Z
-CUSTOM_LAYOUT = {
-    # Top row
-    'q': 'a', 'w': 'b', 'e': 'c', 'r': 'd', 't': 'e', 'y': 'f', 'u': 'g', 'i': 'h', 'o': 'i', 'p': 'j',
-    # Home row
-    'a': 'k', 's': 'l', 'd': 'm', 'f': 'n', 'g': 'o', 'h': 'p', 'j': 'q', 'k': 'r', 'l': 's',
-    # Bottom row
-    'z': 't', 'x': 'u', 'c': 'v', 'v': 'w', 'b': 'x', 'n': 'y', 'm': 'z'
-}
+# CUSTOM_LAYOUT = {
+#     # Top row
+#     'q': 'a', 'w': 'b', 'e': 'c', 'r': 'd', 't': 'e', 'y': 'f', 'u': 'g', 'i': 'h', 'o': 'i', 'p': 'j',
+#     # Home row
+#     'a': 'k', 's': 'l', 'd': 'm', 'f': 'n', 'g': 'o', 'h': 'p', 'j': 'q', 'k': 'r', 'l': 's',
+#     # Bottom row
+#     'z': 't', 'x': 'u', 'c': 'v', 'v': 'w', 'b': 'x', 'n': 'y', 'm': 'z'
+# }
 
+CUSTOM_LAYOUT = random_custom_layout()
 
 # ================= PYGAME PROGRAM =================
 
@@ -258,36 +279,36 @@ def main():
                 data = img.tobytes()
                 qr_surface = pygame.image.fromstring(data, size, mode_str)
                 # Optionally scale the QR code to a more suitable size (e.g., 300x300)
-                qr_surface = pygame.transform.scale(qr_surface, (300, 300))
+                qr_surface = pygame.transform.scale(qr_surface, (200, 200))
 
             # Blit the QR code underneath the "thank you" line
-            qr_rect = qr_surface.get_rect(center=(screen_width // 2, screen_height // 2 + 50))
+            qr_rect = qr_surface.get_rect(center=(screen_width // 2 - 150, screen_height // 2))
             screen.blit(qr_surface, qr_rect)
 
             # Also display the Q&A text (using the system font for clarity)
-            '''
             qna_lines = []
             for q, a in session_q_and_a:
                 qna_lines.append(q)
                 qna_lines.append("Your input: " + a)
                 qna_lines.append("")  # Blank line for spacing
             # Starting position: below the QR code
-            y_text = qr_rect.bottom + 20
+            # y_text = qr_rect.bottom + 20
+            y_text = screen_height // 2 - 50
             for line in qna_lines:
                 line_surface = bottom_font.render(line, True, text_color)
-                line_rect = line_surface.get_rect(center=(screen_width // 2, y_text))
+                line_rect = line_surface.get_rect(center=(screen_width // 2 + 50, y_text))
                 screen.blit(line_surface, line_rect)
                 y_text += line_surface.get_height() + 5
-                '''
 
             # ---------------- Countdown Timer ----------------
             # Calculate remaining time before returning to Waiting Mode
             remaining = int(THANK_YOU_DURATION - (time.time() - thank_you_start_time))
-            # countdown_text = f"The QR code will disappear in {remaining} seconds"
+
             if remaining > 1:
                 countdown_text = f"The QR code will disappear in {remaining} seconds"
             else:
                 countdown_text = f"The QR code will disappear in {remaining} second"
+
             countdown_surface = bottom_font.render(countdown_text, True, text_color)
             countdown_rect = countdown_surface.get_rect(center=(screen_width // 2, screen_height - 40))
             screen.blit(countdown_surface, countdown_rect)
