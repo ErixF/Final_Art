@@ -221,9 +221,9 @@ def main():
             screen.blit(base_surface, base_rect)
 
             # Display the extra line "Don't worry" below the base sentence
-            worry_surface = main_font.render("", True, text_color)
-            worry_rect = worry_surface.get_rect(center=(screen_width // 2, screen_height - 75))
-            screen.blit(worry_surface, worry_rect)
+            #worry_surface = main_font.render("Don't worry", True, text_color)
+            #worry_rect = worry_surface.get_rect(center=(screen_width // 2, screen_height - 75))
+            #screen.blit(worry_surface, worry_rect)
 
             # Display the free input text (positioned below the two lines)
             input_surface = main_font.render(free_input_text, True, text_color)
