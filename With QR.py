@@ -36,7 +36,7 @@ QUESTIONS = [
 WAITING_MODE_SENTENCE_INTERVAL = 1  # seconds between sentences in Waiting Mode
 INPUT_MODE_TIMEOUT = 2  # seconds with no input in free input phase before saving and transitioning
 QUESTION_MODE_TIMEOUT = 2  # seconds with no input in Question Mode before recording answer and moving on
-THANK_YOU_DURATION = 15  # seconds to display thank you screen
+THANK_YOU_DURATION = 30  # seconds to display thank you screen
 
 # ---------------- Custom Keyboard Remap ----------------
 def random_custom_layout():
@@ -77,6 +77,8 @@ CUSTOM_LAYOUT = random_custom_layout()
 
 def main():
     pygame.init()
+
+    screen = pygame.display.set_mode((1980, 1020))
 
     # Set up fullscreen display with black background
     info_object = pygame.display.Info()
@@ -141,8 +143,10 @@ def main():
                 running = False
 
             if event.type==pygame.KEYDOWN:
-                # Allow ESC key to quit at any time
-                if event.key==pygame.K_ESCAPE:
+                # Allow CTRL+C and ESC key to quit at any time
+                keys = pygame.key.get_pressed()
+                #!!!!! REMEMBER TO REMOVE ESC BEFORE PUTTING INTO PRODUCTION !!!!!
+                if (keys[pygame.K_c] and (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL])) or keys[pygame.K_ESCAPE]:
                     running = False
                 else:
                     # Function to remap key based on custom layout.
@@ -204,7 +208,7 @@ def main():
             screen.blit(base_surface, base_rect)
 
             # Display the extra line "Don't worry" below the base sentence
-            worry_surface = main_font.render("Don't worry", True, text_color)
+            worry_surface = main_font.render("Don't worry, the keyboard is weird, I know...", True, text_color)
             worry_rect = worry_surface.get_rect(center=(screen_width // 2, screen_height // 2 - 25))
             screen.blit(worry_surface, worry_rect)
 
@@ -257,8 +261,8 @@ def main():
         elif mode==THANK_YOU_MODE:
             # ---------------- Thank You Mode Display ----------------
             # Display a "thank you" message in the center of the screen
-            thank_you_surface = main_font.render("thank you", True, text_color)
-            thank_you_rect = thank_you_surface.get_rect(center=(screen_width // 2, screen_height // 2 - 150))
+            thank_you_surface = main_font.render("Thank You", True, text_color)
+            thank_you_rect = thank_you_surface.get_rect(center=(screen_width // 2, screen_height // 4))
             screen.blit(thank_you_surface, thank_you_rect)
 
             # Generate the QR code only once
@@ -279,10 +283,10 @@ def main():
                 data = img.tobytes()
                 qr_surface = pygame.image.fromstring(data, size, mode_str)
                 # Optionally scale the QR code to a more suitable size (e.g., 300x300)
-                qr_surface = pygame.transform.scale(qr_surface, (200, 200))
+                qr_surface = pygame.transform.scale(qr_surface, (screen_width // 5, screen_width // 5))
 
             # Blit the QR code underneath the "thank you" line
-            qr_rect = qr_surface.get_rect(center=(screen_width // 2 - 150, screen_height // 2))
+            qr_rect = qr_surface.get_rect(center=(screen_width // 4, screen_height // 2))
             screen.blit(qr_surface, qr_rect)
 
             # Also display the Q&A text (using the system font for clarity)
@@ -291,12 +295,12 @@ def main():
                 qna_lines.append(q)
                 qna_lines.append("Your input: " + a)
                 qna_lines.append("")  # Blank line for spacing
-            # Starting position: below the QR code
+
             # y_text = qr_rect.bottom + 20
-            y_text = screen_height // 2 - 50
+            y_text = screen_height // 3 + 50
             for line in qna_lines:
                 line_surface = bottom_font.render(line, True, text_color)
-                line_rect = line_surface.get_rect(center=(screen_width // 2 + 50, y_text))
+                line_rect = line_surface.get_rect(center=(3 * (screen_width // 4) - 20, y_text))
                 screen.blit(line_surface, line_rect)
                 y_text += line_surface.get_height() + 5
 
