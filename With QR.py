@@ -28,14 +28,25 @@ SENTENCES = [
 # List of questions to ask in Question Mode (after free input)
 QUESTIONS = [
     "What is your name?",
-    "How are you feeling?",
-    "Any comments?"
+    "Wait… that doesn’t look right. Try again.",
+    "Is this how others see your name?",
+    "Okay, how is your feeling right now?",
+    "Try explaining it again, but shorter.",
+    "Wanna try again? Maybe slower this time?",
+    "I so sorry, I can't understand what you said... (Tap any key to try again)",
+    "Wait no, actually, has anyone ever misunderstood something important you said?",
+    "How dose that feel?",
+    "Did you correct them, or let them believe what they heard?",
+    "Type something simple: ",
+    "Now type something complicated: ",
+    "Did that feel different?",
+    "Okay now, try type one last thing before you leave: ",
 ]
 
 # Timing parameters (in seconds)
 WAITING_MODE_SENTENCE_INTERVAL = 1  # seconds between sentences in Waiting Mode
-INPUT_MODE_TIMEOUT = 2  # seconds with no input in free input phase before saving and transitioning
-QUESTION_MODE_TIMEOUT = 2  # seconds with no input in Question Mode before recording answer and moving on
+INPUT_MODE_TIMEOUT = 1  # seconds with no input in free input phase before saving and transitioning
+QUESTION_MODE_TIMEOUT = 1  # seconds with no input in Question Mode before recording answer and moving on
 THANK_YOU_DURATION = 30  # seconds to display thank you screen
 
 # ---------------- Custom Keyboard Remap ----------------
@@ -99,6 +110,7 @@ def main():
 
     # Load the system font for the fixed prompt at the bottom
     bottom_font = pygame.font.SysFont(None, 36)
+    recap_font = pygame.font.SysFont(None, 24)
 
     # Define text color and background color
     text_color = (255, 255, 255)  # white
@@ -180,8 +192,9 @@ def main():
                             pass
                         else:
                             char = event.unicode
-                            # Remap the character if it's an alphabet letter per custom layout
-                            char = remap_key(char)
+                            # For all but the last question, remap the character; for the last question, use it as-is.
+                            if question_index!=len(QUESTIONS) - 1:
+                                char = remap_key(char)
                             question_input_text += char
                             question_last_time = time.time()
 
@@ -208,7 +221,7 @@ def main():
             screen.blit(base_surface, base_rect)
 
             # Display the extra line "Don't worry" below the base sentence
-            worry_surface = main_font.render("Don't worry, the keyboard is weird, I know...", True, text_color)
+            worry_surface = main_font.render("", True, text_color)
             worry_rect = worry_surface.get_rect(center=(screen_width // 2, screen_height - 75))
             screen.blit(worry_surface, worry_rect)
 
@@ -261,9 +274,17 @@ def main():
         elif mode==THANK_YOU_MODE:
             # ---------------- Thank You Mode Display ----------------
             # Display a "thank you" message in the center of the screen
-            thank_you_surface = main_font.render("Thank You", True, text_color)
-            thank_you_rect = thank_you_surface.get_rect(center=(screen_width // 2, screen_height // 4))
+            thank_you_surface = main_font.render("Hmmm… interesting.", True, text_color)
+            thank_you_rect = thank_you_surface.get_rect(center=(screen_width // 2, 40))
             screen.blit(thank_you_surface, thank_you_rect)
+
+            thank_you_surface2 = main_font.render("Not everything you typed comes out the way you mean it. But you still tried.", True, text_color)
+            thank_you_rect2 = thank_you_surface2.get_rect(center=(screen_width // 2, 90))
+            screen.blit(thank_you_surface2, thank_you_rect2)
+
+            thank_you_surface3 = main_font.render("Thank you.", True, text_color)
+            thank_you_rect3 = thank_you_surface3.get_rect(center=(screen_width // 2, 150))
+            screen.blit(thank_you_surface3, thank_you_rect3)
 
             # Generate the QR code only once
             if qr_surface is None:
@@ -283,7 +304,7 @@ def main():
                 data = img.tobytes()
                 qr_surface = pygame.image.fromstring(data, size, mode_str)
                 # Optionally scale the QR code to a more suitable size (e.g., 300x300)
-                qr_surface = pygame.transform.scale(qr_surface, (screen_width // 5, screen_width // 5))
+                qr_surface = pygame.transform.scale(qr_surface, (screen_width // 6, screen_width // 6))
 
             # Blit the QR code underneath the "thank you" line
             qr_rect = qr_surface.get_rect(center=(screen_width // 4, screen_height // 2))
@@ -297,9 +318,9 @@ def main():
                 qna_lines.append("")  # Blank line for spacing
 
             # y_text = qr_rect.bottom + 20
-            y_text = screen_height // 3 + 50
+            y_text = 200
             for line in qna_lines:
-                line_surface = bottom_font.render(line, True, text_color)
+                line_surface = recap_font.render(line, True, text_color)
                 line_rect = line_surface.get_rect(center=(3 * (screen_width // 4) - 20, y_text))
                 screen.blit(line_surface, line_rect)
                 y_text += line_surface.get_height() + 5
@@ -309,13 +330,18 @@ def main():
             remaining = int(THANK_YOU_DURATION - (time.time() - thank_you_start_time))
 
             if remaining > 1:
-                countdown_text = f"The QR code will disappear in {remaining} seconds"
+                countdown_text = f"The QR code will disappear in {remaining} seconds."
             else:
-                countdown_text = f"The QR code will disappear in {remaining} second"
+                countdown_text = f"The QR code will disappear in {remaining} second."
 
             countdown_surface = bottom_font.render(countdown_text, True, text_color)
-            countdown_rect = countdown_surface.get_rect(center=(screen_width // 2, screen_height - 40))
+            countdown_rect = countdown_surface.get_rect(center=(screen_width // 4, screen_height - 20))
             screen.blit(countdown_surface, countdown_rect)
+
+            countdown_text2 = f"Scan to remember your answer."
+            countdown_surface2 = bottom_font.render(countdown_text2, True, text_color)
+            countdown_rect2 = countdown_surface2.get_rect(center=(screen_width // 4, screen_height - 70))
+            screen.blit(countdown_surface2, countdown_rect2)
 
             # After THANK_YOU_DURATION seconds, return to Waiting Mode and reset session data
             if time.time() - thank_you_start_time >= THANK_YOU_DURATION:
@@ -327,19 +353,17 @@ def main():
                 qr_surface = None
 
         # ---------------- Draw the Fixed Prompt at the Bottom ----------------
-        '''
         if mode==WAITING_MODE:
-            prompt_text = "WAITING_MODE"
+            prompt_text = ""
         elif mode==INPUT_MODE:
-            prompt_text = "INPUT_MODE"
+            prompt_text = "Don't worry, the keyboard is acting weird, I know..."
         elif mode==QUESTION_MODE:
-            prompt_text = "QUESTION_MODE"
+            prompt_text = "If you wish not to answer, type anything and wait to skip"
         elif mode==THANK_YOU_MODE:
-            prompt_text = "END SCREEN"
+            prompt_text = ""
         prompt_surface = bottom_font.render(prompt_text, True, text_color)
         prompt_rect = prompt_surface.get_rect(midbottom=(screen_width // 2, screen_height - 10))
         screen.blit(prompt_surface, prompt_rect)
-        '''
 
         # ---------------- Update Display and Tick the Clock ----------------
         pygame.display.flip()
