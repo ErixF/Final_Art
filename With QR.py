@@ -3,23 +3,18 @@ import random
 import time
 import os
 import sys
-import qrcode  # Make sure to install this library: pip install "qrcode[pil]"
-from io import BytesIO  # For converting PIL image to a pygame image
 import string
 
 # ================= CONFIGURABLE PART =================
 
 # Path to your OTF font file
-FONT_PATH = "TypeLightSans-KV84p.otf"
-
-# Output text file where user inputs (free input and question answers) are appended
-OUTPUT_FILE = "collected_input.txt"
+FONT_PATH = "bulletin.regular.ttf"
 
 # List of sentences to display in Waiting Mode
 SENTENCES = [
     "Are you there?",
     "Type to me.",
-    "What’s the first word that comes to your mind? Type it.",
+    "What’s the first word that comes to your mind?",
     "Feel free to type anything!",
     "Try typing without thinking. What happens?",
     "What’s the last thing you typed today?"
@@ -29,25 +24,26 @@ SENTENCES = [
 QUESTIONS = [
     "What is your name?",
     "Wait… that doesn’t look right. Try again.",
-    "Is this how others see your name?",
-    "Okay, how is your feeling right now?",
-    "Try explaining it again, but shorter.",
-    "Wanna try again? Maybe slower this time?",
-    "I so sorry, I can't understand what you said... (Tap any key to try again)",
-    "Wait no, actually, has anyone ever misunderstood something important you said?",
-    "How dose that feel?",
-    "Did you correct them, or let them believe what they heard?",
-    "Type something simple: ",
-    "Now type something complicated: ",
-    "Did that feel different?",
-    "Okay now, try type one last thing before you leave: ",
+    "I know. There’s no undo button, just like in real life.",
+    "Do you think I’m really trying to understand you, or am I just pretending?",
+    "Have you ever truly felt understood by a machine?",
+    "Maybe try again? Slower this time, I promise I’m listening.",
+    "What could I say right now to make you trust me?",
+    "If I told you I felt lonely, would you believe me?",
+    "Would you like to share something you regret?",
+    "Take a deep breath. Tell me one thing you hope I’ll remember about you.",
+    #learning the viewer
+    #Yes/No question
+    #Uncontroled AI
+    #Machine go beyond limit
+    #Ask for prompt
 ]
 
 # Timing parameters (in seconds)
-WAITING_MODE_SENTENCE_INTERVAL = 1  # seconds between sentences in Waiting Mode
+WAITING_MODE_SENTENCE_INTERVAL = 3  # seconds between sentences in Waiting Mode
 INPUT_MODE_TIMEOUT = 1  # seconds with no input in free input phase before saving and transitioning
 QUESTION_MODE_TIMEOUT = 1  # seconds with no input in Question Mode before recording answer and moving on
-THANK_YOU_DURATION = 30  # seconds to display thank you screen
+THANK_YOU_DURATION = 15  # seconds to display thank you screen
 
 # ---------------- Custom Keyboard Remap ----------------
 def random_custom_layout():
@@ -102,7 +98,9 @@ def main():
 
     # Load the provided OTF font for all dynamic text (waiting, free input, questions)
     try:
-        main_font = pygame.font.Font(FONT_PATH, 48)
+        main_font = pygame.font.Font(FONT_PATH, 46)
+        question_font = pygame.font.Font(FONT_PATH, 40)
+        ty_font = pygame.font.Font(FONT_PATH, 38)
     except Exception as e:
         print(f"Could not load font from {FONT_PATH}. Exiting.")
         pygame.quit()
@@ -126,7 +124,7 @@ def main():
 
     # ---------------- Session Variables ----------------
     # Record the Q&A pairs for this session.
-    session_q_and_a = []
+    #session_q_and_a = []
 
     # ---------------- Waiting Mode Variables ----------------
     last_sentence_time = time.time()
@@ -232,8 +230,8 @@ def main():
 
             # If no input for INPUT_MODE_TIMEOUT seconds, record the free input and transition to Question Mode
             if free_input_last_time and (time.time() - free_input_last_time >= INPUT_MODE_TIMEOUT):
-                if free_input_text.strip()!="":
-                    append_to_file(OUTPUT_FILE, free_input_text)
+                #if free_input_text.strip()!="":
+                    #append_to_file(OUTPUT_FILE, free_input_text)
                 # Transition to Question Mode
                 mode = QUESTION_MODE
                 question_index = 0
@@ -244,13 +242,19 @@ def main():
             # Check if there are still questions to ask
             if question_index < len(QUESTIONS):
                 current_question = QUESTIONS[question_index]
+                question_color = text_color
+                # Use 1-indexing for displaying question number:
+                #if (question_index + 1) in (3, 7, 8):
+                    #question_color = (105, 171, 115)  # RGB(51,153,51)
+                #else:
+                    #question_color = text_color
                 # Display the current question (positioned above center)
-                question_surface = main_font.render(current_question, True, text_color)
+                question_surface = question_font.render(current_question, True, question_color)
                 question_rect = question_surface.get_rect(center=(screen_width // 2, screen_height // 2 - 50))
                 screen.blit(question_surface, question_rect)
 
                 # Display the user's answer input (positioned below the question)
-                answer_surface = main_font.render(question_input_text, True, text_color)
+                answer_surface = question_font.render(question_input_text, True, text_color)
                 answer_rect = answer_surface.get_rect(center=(screen_width // 2, screen_height // 2 + 50))
                 screen.blit(answer_surface, answer_rect)
 
@@ -258,9 +262,9 @@ def main():
                 # record the answer and move on to the next question.
                 if question_last_time and (time.time() - question_last_time >= QUESTION_MODE_TIMEOUT):
                     if question_input_text.strip()!="":
-                        append_to_file(OUTPUT_FILE, question_input_text)
+                        #append_to_file(OUTPUT_FILE, question_input_text)
                         # Record the Q&A pair for this session.
-                        session_q_and_a.append((current_question, question_input_text))
+                        #session_q_and_a.append((current_question, question_input_text))
                         question_index += 1  # Move to next question
                         question_input_text = ""
                         question_last_time = time.time()
@@ -274,19 +278,24 @@ def main():
         elif mode==THANK_YOU_MODE:
             # ---------------- Thank You Mode Display ----------------
             # Display a "thank you" message in the center of the screen
-            thank_you_surface = main_font.render("Hmmm… interesting.", True, text_color)
-            thank_you_rect = thank_you_surface.get_rect(center=(screen_width // 2, 40))
+            thank_you_surface = main_font.render("Hmmm…", True, (51,153,51))
+            thank_you_rect = thank_you_surface.get_rect(center=(screen_width // 2, screen_height // 2 - 150))
             screen.blit(thank_you_surface, thank_you_rect)
 
-            thank_you_surface2 = main_font.render("Not everything you typed comes out the way you mean it. But you still tried.", True, text_color)
-            thank_you_rect2 = thank_you_surface2.get_rect(center=(screen_width // 2, 90))
+            thank_you_surface2 = main_font.render("Not everything you typed comes out the way you mean it.", True, text_color)
+            thank_you_rect2 = thank_you_surface2.get_rect(center=(screen_width // 2, screen_height // 2 - 50))
             screen.blit(thank_you_surface2, thank_you_rect2)
 
+            thank_you_surface4 = main_font.render("But you still tried.", True, text_color)
+            thank_you_rect4 = thank_you_surface4.get_rect(center=(screen_width // 2, screen_height // 2 + 50))
+            screen.blit(thank_you_surface4, thank_you_rect4)
+
             thank_you_surface3 = main_font.render("Thank you.", True, text_color)
-            thank_you_rect3 = thank_you_surface3.get_rect(center=(screen_width // 2, 150))
+            thank_you_rect3 = thank_you_surface3.get_rect(center=(screen_width // 2, screen_height // 2 + 150))
             screen.blit(thank_you_surface3, thank_you_rect3)
 
             # Generate the QR code only once
+            '''
             if qr_surface is None:
                 # Format the Q&A text from the session
                 qr_text = ""
@@ -324,24 +333,20 @@ def main():
                 line_rect = line_surface.get_rect(center=(3 * (screen_width // 4) - 20, y_text))
                 screen.blit(line_surface, line_rect)
                 y_text += line_surface.get_height() + 5
+            '''
 
             # ---------------- Countdown Timer ----------------
             # Calculate remaining time before returning to Waiting Mode
             remaining = int(THANK_YOU_DURATION - (time.time() - thank_you_start_time))
 
             if remaining > 1:
-                countdown_text = f"The QR code will disappear in {remaining} seconds."
+                countdown_text = f"System restart in {remaining} seconds."
             else:
-                countdown_text = f"The QR code will disappear in {remaining} second."
+                countdown_text = f"System restart in {remaining} second."
 
             countdown_surface = bottom_font.render(countdown_text, True, text_color)
-            countdown_rect = countdown_surface.get_rect(center=(screen_width // 4, screen_height - 20))
+            countdown_rect = countdown_surface.get_rect(center=(screen_width // 2, screen_height - 20))
             screen.blit(countdown_surface, countdown_rect)
-
-            countdown_text2 = f"Scan to remember your answer."
-            countdown_surface2 = bottom_font.render(countdown_text2, True, text_color)
-            countdown_rect2 = countdown_surface2.get_rect(center=(screen_width // 4, screen_height - 70))
-            screen.blit(countdown_surface2, countdown_rect2)
 
             # After THANK_YOU_DURATION seconds, return to Waiting Mode and reset session data
             if time.time() - thank_you_start_time >= THANK_YOU_DURATION:
@@ -356,9 +361,9 @@ def main():
         if mode==WAITING_MODE:
             prompt_text = ""
         elif mode==INPUT_MODE:
-            prompt_text = "Don't worry, the keyboard is acting weird, I know..."
+            prompt_text = "Humm..."
         elif mode==QUESTION_MODE:
-            prompt_text = "If you wish not to answer, type anything and wait to skip"
+            prompt_text = ""
         elif mode==THANK_YOU_MODE:
             prompt_text = ""
         prompt_surface = bottom_font.render(prompt_text, True, text_color)
