@@ -14,24 +14,32 @@ FONT_PATH = "bulletin.regular.ttf"
 SENTENCES = [
     "Are you there?",
     "Type to me.",
-    "What’s the first word that comes to your mind?",
     "Feel free to type anything!",
     "Try typing without thinking. What happens?",
-    "What’s the last thing you typed today?"
+    "Just type.",
+    "Press some keys!"
+    "Go ahead, type anything.",
+    "Hit the keyboard randomly.",
+    "Don’t think—just type.",
+    "Your turn to type.",
+    "Make some noise on the keyboard!",
+    "Type freely.",
 ]
 
 # List of questions to ask in Question Mode (after free input)
 QUESTIONS = [
     "What is your name?",
     "Wait… that doesn’t look right. Try again.",
-    "I know. There’s no undo button, just like in real life.",
-    "Do you think I’m really trying to understand you, or am I just pretending?",
-    "Have you ever truly felt understood by a machine?",
+    "Does it bother you when you can’t undo mistakes?",
     "Maybe try again? Slower this time, I promise I’m listening.",
-    "What could I say right now to make you trust me?",
-    "If I told you I felt lonely, would you believe me?",
-    "Would you like to share something you regret?",
-    "Take a deep breath. Tell me one thing you hope I’ll remember about you.",
+    "Do you think I genuinely care about your answers?",
+    "What’s the last thing you typed today?",
+    "What’s the first word that comes to your mind?",
+    "Have you ever trusted a machine completely?",
+    "Are you comfortable if I ask something more personal?",
+    "Do you get a coffee every morning?",
+    "Would it be okay if I study how you sleep?",
+    "Now ake a deep breath. Tell me one thing you hope I’ll remember about you.",
     #learning the viewer
     #Yes/No question
     #Uncontroled AI
@@ -40,9 +48,9 @@ QUESTIONS = [
 ]
 
 # Timing parameters (in seconds)
-WAITING_MODE_SENTENCE_INTERVAL = 3  # seconds between sentences in Waiting Mode
-INPUT_MODE_TIMEOUT = 1  # seconds with no input in free input phase before saving and transitioning
-QUESTION_MODE_TIMEOUT = 1  # seconds with no input in Question Mode before recording answer and moving on
+WAITING_MODE_SENTENCE_INTERVAL = 2  # seconds between sentences in Waiting Mode
+INPUT_MODE_TIMEOUT = 3  # seconds with no input in free input phase before saving and transitioning
+QUESTION_MODE_TIMEOUT = 3  # seconds with no input in Question Mode before recording answer and moving on
 THANK_YOU_DURATION = 15  # seconds to display thank you screen
 
 # ---------------- Custom Keyboard Remap ----------------
@@ -156,7 +164,8 @@ def main():
                 # Allow CTRL+C and ESC key to quit at any time
                 keys = pygame.key.get_pressed()
                 #!!!!! REMEMBER TO REMOVE ESC BEFORE PUTTING INTO PRODUCTION !!!!!
-                if (keys[pygame.K_c] and (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL])) or keys[pygame.K_ESCAPE]:
+                # if (keys[pygame.K_c] and (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL])) or keys[pygame.K_ESCAPE]:
+                if keys[pygame.K_c] and keys[pygame.K_RCTRL]:
                     running = False
                 else:
                     # Function to remap key based on custom layout.
@@ -176,8 +185,16 @@ def main():
                         base_sentence = current_sentence
                     elif mode==INPUT_MODE:
                         # In free input mode, capture characters (ignoring backspace)
-                        if event.key==pygame.K_BACKSPACE:
-                            pass  # No backspace allowed
+                        if event.key in (pygame.K_TAB, pygame.K_DELETE, pygame.K_ESCAPE, pygame.K_BACKSPACE):
+                            pass
+                        # elif event.key==pygame.K_BACKSPACE:
+                            # pass  # No backspace allowed
+                        elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+                            # If Enter is pressed, immediately transition to Question Mode
+                            mode = QUESTION_MODE
+                            question_index = 0
+                            question_input_text = ""
+                            question_last_time = time.time()
                         else:
                             char = event.unicode
                             # Remap the character if it's an alphabet letter per custom layout
@@ -186,7 +203,7 @@ def main():
                             free_input_last_time = time.time()
                     elif mode==QUESTION_MODE:
                         # In question mode, capture input for the current question (ignoring backspace)
-                        if event.key==pygame.K_BACKSPACE:
+                        if event.key in (pygame.K_TAB, pygame.K_DELETE, pygame.K_ESCAPE, pygame.K_BACKSPACE):
                             pass
                         elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
                             # If Enter is pressed, immediately move to the next question
