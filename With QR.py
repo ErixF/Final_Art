@@ -188,10 +188,15 @@ def main():
                         # In question mode, capture input for the current question (ignoring backspace)
                         if event.key==pygame.K_BACKSPACE:
                             pass
+                        elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
+                            # If Enter is pressed, immediately move to the next question
+                            question_index += 1  # Move to next question
+                            question_input_text = ""
+                            question_last_time = time.time()
                         else:
                             char = event.unicode
                             # For all but the last question, remap the character; for the last question, use it as-is.
-                            if question_index!=len(QUESTIONS) - 1:
+                            if question_index != len(QUESTIONS) - 1:
                                 char = remap_key(char)
                             question_input_text += char
                             question_last_time = time.time()
