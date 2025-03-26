@@ -17,10 +17,10 @@ SENTENCES = [
     "Feel free to type anything!",
     "Try typing without thinking. What happens?",
     "Just type.",
-    "Press some keys!"
+    "Press some keys!",
     "Go ahead, type anything.",
     "Hit the keyboard randomly.",
-    "Don’t think—just type.",
+    "Don’t think, just type.",
     "Your turn to type.",
     "Make some noise on the keyboard!",
     "Type freely.",
@@ -33,25 +33,19 @@ QUESTIONS = [
     "Does it bother you when you can’t undo mistakes?",
     "Maybe try again? Slower this time, I promise I’m listening.",
     "Do you think I genuinely care about your answers?",
-    "What’s the last thing you typed today?",
-    "What’s the first word that comes to your mind?",
     "Have you ever trusted a machine completely?",
     "Are you comfortable if I ask something more personal?",
-    "Do you get a coffee every morning?",
     "Would it be okay if I study how you sleep?",
-    "Now ake a deep breath. Tell me one thing you hope I’ll remember about you.",
-    #learning the viewer
-    #Yes/No question
-    #Uncontroled AI
-    #Machine go beyond limit
-    #Ask for prompt
+    "Would you mind if I listen when you're not speaking to me?",
+    "Can I monitor your heartbeat when you interact with me?",
+    "Fine. Take a breath. Tell me one thing you hope I’ll remember about you.",
 ]
 
 # Timing parameters (in seconds)
 WAITING_MODE_SENTENCE_INTERVAL = 2  # seconds between sentences in Waiting Mode
 INPUT_MODE_TIMEOUT = 3  # seconds with no input in free input phase before saving and transitioning
 QUESTION_MODE_TIMEOUT = 3  # seconds with no input in Question Mode before recording answer and moving on
-THANK_YOU_DURATION = 15  # seconds to display thank you screen
+THANK_YOU_DURATION = 10  # seconds to display thank you screen
 
 # ---------------- Custom Keyboard Remap ----------------
 def random_custom_layout():
@@ -108,7 +102,7 @@ def main():
     try:
         main_font = pygame.font.Font(FONT_PATH, 46)
         question_font = pygame.font.Font(FONT_PATH, 40)
-        ty_font = pygame.font.Font(FONT_PATH, 38)
+        waiting_font = pygame.font.Font(FONT_PATH, 60)
     except Exception as e:
         print(f"Could not load font from {FONT_PATH}. Exiting.")
         pygame.quit()
@@ -224,7 +218,7 @@ def main():
         # ---------------- Mode-specific Logic and Rendering ----------------
         if mode==WAITING_MODE:
             # Display a random sentence (centered) that changes every 5 seconds
-            sentence_surface = main_font.render(current_sentence, True, text_color)
+            sentence_surface = waiting_font.render(current_sentence, True, text_color)
             sentence_rect = sentence_surface.get_rect(center=(screen_width // 2, screen_height // 2))
             screen.blit(sentence_surface, sentence_rect)
 
@@ -282,15 +276,29 @@ def main():
 
                 # If no input for QUESTION_MODE_TIMEOUT seconds and some text has been entered,
                 # record the answer and move on to the next question.
-                if question_last_time and (time.time() - question_last_time >= QUESTION_MODE_TIMEOUT):
+                #if question_last_time and (time.time() - question_last_time >= QUESTION_MODE_TIMEOUT):
+                    #if question_input_text.strip()!="":
+                        ##append_to_file(OUTPUT_FILE, question_input_text)
+                        ## Record the Q&A pair for this session.
+                        ##session_q_and_a.append((current_question, question_input_text))
+                        #question_index += 1  # Move to next question
+                        #question_input_text = ""
+                        #question_last_time = time.time()
+                    ## If no text has been entered, wait (do not advance)
+
+                # Global inactivity timeout: if 30 seconds have passed since the question started, reset to Waiting Mode
+                if time.time() - question_last_time >= 30:
+                    mode = WAITING_MODE
+                    last_sentence_time = time.time()
+                    question_index = 0
+                    question_input_text = ""
+                # Otherwise, if no key press for QUESTION_MODE_TIMEOUT seconds and some text has been entered, move on
+                elif time.time() - question_last_time >= QUESTION_MODE_TIMEOUT:
                     if question_input_text.strip()!="":
-                        #append_to_file(OUTPUT_FILE, question_input_text)
-                        # Record the Q&A pair for this session.
-                        #session_q_and_a.append((current_question, question_input_text))
                         question_index += 1  # Move to next question
                         question_input_text = ""
                         question_last_time = time.time()
-                    # If no text has been entered, wait (do not advance)
+
             else:
                 # All questions have been answered; switch to Thank You mode.
                 mode = THANK_YOU_MODE
@@ -300,19 +308,15 @@ def main():
         elif mode==THANK_YOU_MODE:
             # ---------------- Thank You Mode Display ----------------
             # Display a "thank you" message in the center of the screen
-            thank_you_surface = main_font.render("Hmmm…", True, (51,153,51))
-            thank_you_rect = thank_you_surface.get_rect(center=(screen_width // 2, screen_height // 2 - 150))
-            screen.blit(thank_you_surface, thank_you_rect)
-
-            thank_you_surface2 = main_font.render("Not everything you typed comes out the way you mean it.", True, text_color)
+            thank_you_surface2 = main_font.render("Humm...", True, text_color)
             thank_you_rect2 = thank_you_surface2.get_rect(center=(screen_width // 2, screen_height // 2 - 50))
             screen.blit(thank_you_surface2, thank_you_rect2)
 
-            thank_you_surface4 = main_font.render("But you still tried.", True, text_color)
+            thank_you_surface4 = main_font.render("I will remember that.", True, text_color)
             thank_you_rect4 = thank_you_surface4.get_rect(center=(screen_width // 2, screen_height // 2 + 50))
             screen.blit(thank_you_surface4, thank_you_rect4)
 
-            thank_you_surface3 = main_font.render("Thank you.", True, text_color)
+            thank_you_surface3 = main_font.render("Bye.", True, text_color)
             thank_you_rect3 = thank_you_surface3.get_rect(center=(screen_width // 2, screen_height // 2 + 150))
             screen.blit(thank_you_surface3, thank_you_rect3)
 
@@ -355,7 +359,6 @@ def main():
                 line_rect = line_surface.get_rect(center=(3 * (screen_width // 4) - 20, y_text))
                 screen.blit(line_surface, line_rect)
                 y_text += line_surface.get_height() + 5
-            '''
 
             # ---------------- Countdown Timer ----------------
             # Calculate remaining time before returning to Waiting Mode
@@ -369,6 +372,7 @@ def main():
             countdown_surface = bottom_font.render(countdown_text, True, text_color)
             countdown_rect = countdown_surface.get_rect(center=(screen_width // 2, screen_height - 20))
             screen.blit(countdown_surface, countdown_rect)
+            '''
 
             # After THANK_YOU_DURATION seconds, return to Waiting Mode and reset session data
             if time.time() - thank_you_start_time >= THANK_YOU_DURATION:
@@ -376,8 +380,8 @@ def main():
                 last_sentence_time = time.time()
                 current_sentence = random.choice(SENTENCES)
                 # Reset session data for next session
-                session_q_and_a = []
-                qr_surface = None
+                #session_q_and_a = []
+                #qr_surface = None
 
         # ---------------- Draw the Fixed Prompt at the Bottom ----------------
         if mode==WAITING_MODE:
