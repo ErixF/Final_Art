@@ -26,7 +26,7 @@ SENTENCES = [
     "Type freely.",
 ]
 
-# List of questions to ask in Question Mode (after free input)
+# List of questions to ask in Question Mode
 QUESTIONS = [
     "What is your name?",
     "Wait… that doesn’t look right. Try again.",
