@@ -12,33 +12,30 @@ FONT_PATH = "bulletin.regular.ttf"
 
 # List of sentences to display in Waiting Mode
 SENTENCES = [
-    "Are you there?",
+    "Are you there? Tell me your name.",
     "Type to me.",
-    "Feel free to type anything!",
-    "Try typing without thinking. What happens?",
-    "Just type.",
-    "Press some keys!",
-    "Go ahead, type anything.",
-    "Hit the keyboard randomly.",
-    "Don’t think, just type.",
-    "Your turn to type.",
-    "Make some noise on the keyboard!",
-    "Type freely.",
+    "Type your name so we can get started.",
+    "C'mon, tell me your name. Just type.",
+    "Don't think too much. Just type your name.",
+    "Go ahead, type your name.",
 ]
 
 # List of questions to ask in Question Mode
 QUESTIONS = [
-    "What is your name?",
     "Wait… that doesn’t look right. Try again.",
-    "Does it bother you when you can’t undo mistakes?",
+    "Did you make the mistake? Or did I?",
     "Maybe try again? Slower this time, I promise I’m listening.",
-    "Do you think I genuinely care about your answers?",
+    "Do you think I care about your answers?",
+    "Do you believe these errors are genuine mistakes?",
+    "Do you trust me?",
     "Have you ever trusted a machine completely?",
+    "Am I smarter than you?",
+    "Do you have think I have something to hide?",
+    "Do you have something to hide?",
     "Are you comfortable if I ask something more personal?",
-    "Would it be okay if I study how you sleep?",
     "Would you mind if I listen when you're not speaking to me?",
-    "Can I monitor your heartbeat when you interact with me?",
-    "Fine. Take a breath. Tell me one thing you hope I’ll remember about you.",
+    "Fine. Do you remember what you've told me today?",
+    "Tell me one thing you hope I’ll remember about you.",
 ]
 
 # Timing parameters (in seconds)
@@ -101,7 +98,7 @@ def main():
     # Load the provided OTF font for all dynamic text (waiting, free input, questions)
     try:
         main_font = pygame.font.Font(FONT_PATH, 46)
-        question_font = pygame.font.Font(FONT_PATH, 40)
+        question_font = pygame.font.Font(FONT_PATH, 50)
         waiting_font = pygame.font.Font(FONT_PATH, 60)
     except Exception as e:
         print(f"Could not load font from {FONT_PATH}. Exiting.")
@@ -158,8 +155,8 @@ def main():
                 # Allow CTRL+C and ESC key to quit at any time
                 keys = pygame.key.get_pressed()
                 #!!!!! REMEMBER TO REMOVE ESC BEFORE PUTTING INTO PRODUCTION !!!!!
-                # if (keys[pygame.K_c] and (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL])) or keys[pygame.K_ESCAPE]:
-                if keys[pygame.K_c] and keys[pygame.K_RCTRL]:
+                ########## if (keys[pygame.K_c] and (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL])) or keys[pygame.K_ESCAPE]:
+                if keys[pygame.K_c] and keys[pygame.K_LCTRL]: ############### CHANGE KEY ###################
                     running = False
                 else:
                     # Function to remap key based on custom layout.
@@ -312,7 +309,7 @@ def main():
             thank_you_rect2 = thank_you_surface2.get_rect(center=(screen_width // 2, screen_height // 2 - 50))
             screen.blit(thank_you_surface2, thank_you_rect2)
 
-            thank_you_surface4 = main_font.render("I will remember that.", True, text_color)
+            thank_you_surface4 = main_font.render("Intervention Recorded.", True, text_color)
             thank_you_rect4 = thank_you_surface4.get_rect(center=(screen_width // 2, screen_height // 2 + 50))
             screen.blit(thank_you_surface4, thank_you_rect4)
 
@@ -387,7 +384,7 @@ def main():
         if mode==WAITING_MODE:
             prompt_text = ""
         elif mode==INPUT_MODE:
-            prompt_text = "Humm..."
+            prompt_text = ""
         elif mode==QUESTION_MODE:
             prompt_text = ""
         elif mode==THANK_YOU_MODE:
