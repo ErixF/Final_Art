@@ -309,7 +309,7 @@ def main():
             thank_you_rect2 = thank_you_surface2.get_rect(center=(screen_width // 2, screen_height // 2 - 50))
             screen.blit(thank_you_surface2, thank_you_rect2)
 
-            thank_you_surface4 = main_font.render("Intervention Recorded.", True, text_color)
+            thank_you_surface4 = main_font.render("Intervention Made.", True, text_color)
             thank_you_rect4 = thank_you_surface4.get_rect(center=(screen_width // 2, screen_height // 2 + 50))
             screen.blit(thank_you_surface4, thank_you_rect4)
 
