@@ -373,9 +373,9 @@ def main():
 
             # After THANK_YOU_DURATION seconds, return to Waiting Mode and reset session data
             if time.time() - thank_you_start_time >= THANK_YOU_DURATION:
+                global CUSTOM_LAYOUT  # Ensure you declare it as global so you can reassign it
+                CUSTOM_LAYOUT = random_custom_layout()  # Generate a new custom layout
                 mode = WAITING_MODE
-                # Remap the keyboard
-                CUSTOM_LAYOUT = random_custom_layout()
                 last_sentence_time = time.time()
                 current_sentence = random.choice(SENTENCES)
                 # Reset session data for next session
